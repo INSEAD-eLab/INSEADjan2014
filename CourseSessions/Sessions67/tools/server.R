@@ -1,5 +1,5 @@
 
-local_directory <- "~/INSEADjan2014/CourseSessions/Sessions67"
+local_directory <- "/srv/shiny-server/INSEADjan2014/CourseSessions/Sessions67"
 source(paste(local_directory,"R/library.R",sep="/"))
 source(paste(local_directory,"R/heatmapOutput.R",sep="/"))
 
