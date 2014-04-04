@@ -25,6 +25,7 @@ shinyServer(function(input, output,session) {
     colnames(ProjectData)<-gsub("\\."," ",colnames(ProjectData))
     
     updateSelectInput(session, "factor_attributes_used","Variables used for Factor Analysis",  colnames(ProjectData), selected=colnames(ProjectData)[1])
+    updateSelectInput(session, "var_for_hist","Select the attribute to see the Histogram : ",  colnames(ProjectData), selected=colnames(ProjectData)[1])
     ProjectData
   })
   
@@ -136,20 +137,20 @@ shinyServer(function(input, output,session) {
     # list the user inputs the tab depends on (easier to read the code)
     input$datafile_name_coded
     input$var_chosen
-    input$action_histogram
+    #input$action_histogram
     
     all_inputs <- user_inputs()
     ProjectData = all_inputs$ProjectData
     
-    var_chosen = max(0,min(input$var_chosen,ncol(ProjectData)))
-    ProjectData[,var_chosen,drop=F]
+    var_for_hist <- input$var_for_hist
+    ProjectData[,var_for_hist,drop=F]
   })
   
   # Now pass to ui.R what it needs to display this tab
   output$histograms <- renderPlot({  
     data_used = unlist(the_histogram_tab())
-    numb_of_breaks = ifelse(length(unique(data_used)) < 10, length(unique(data_used)), length(data_used)/5)
-    hist(data_used, breaks=numb_of_breaks,main = NULL, xlab=paste("Histogram of Variable: ",colnames(data_used)), ylab="Frequency", cex.lab=1.2, cex.axis=1.2)
+    numb_of_breaks = ifelse(length(unique(data_used)) < 10, length(unique(data_used)), length(data_used)/5)    
+    hist(data_used, breaks=numb_of_breaks,main = NULL, xlab=paste("Histogram of Variable: ",input$var_for_hist), ylab="Frequency", cex.lab=1.2, cex.axis=1.2)
   })
   
   ########## The next few tabs use the same "heavy computation" results for Hclust, so we do these only once
@@ -188,7 +189,7 @@ shinyServer(function(input, output,session) {
     colnames(Unrotated_Factors)<-paste("Component",1:ncol(Unrotated_Factors),sep=" ")
     rownames(Unrotated_Factors) <- colnames(ProjectDataFactor)
     
-    if (input$show_colnames_unrotate==0)
+    if (input$show_colnames_unrotate== "NO")
       rownames(Unrotated_Factors)<- NULL
     
     Variance_Explained_Table_results<-PCA(ProjectDataFactor, graph=FALSE)
@@ -209,7 +210,7 @@ shinyServer(function(input, output,session) {
     colnames(Rotated_Factors)<-paste("Component",1:ncol(Rotated_Factors),sep=" ")
     rownames(Rotated_Factors) <- colnames(ProjectDataFactor)
     
-    if (input$show_colnames_rotate==0)
+    if (input$show_colnames_rotate== "NO")
       rownames(Rotated_Factors)<- NULL
     
     NEW_ProjectData <- Rotated_Results$scores
@@ -239,7 +240,7 @@ shinyServer(function(input, output,session) {
     
     data_used = the_computations()    
     the_data = data_used$correl
-    if (input$show_colnames == "0"){
+    if (input$show_colnames == "NO"){
       colnames(the_data) <- NULL
       rownames(the_data) <- NULL
     }
@@ -314,7 +315,7 @@ shinyServer(function(input, output,session) {
       plot(NEW_ProjectData[,1],ProjectData[,1], 
            main="Only 1 Derived Variable: Using Initial Variable",
            xlab="Derived Variable (Factor) 1", 
-           ylab="Initial Variable (Factor) 2")    
+           ylab="Initial Variable (Factor) 2")
     }
   })
   
