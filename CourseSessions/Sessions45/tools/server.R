@@ -21,9 +21,11 @@ shinyServer(function(input, output,session) {
     # ProjectData with the filethe user loads
     ProjectData <- read.csv(paste(paste(local_directory,"data",sep="/"), paste(input$datafile_name_coded, "csv", sep="."), sep = "/"), sep=";", dec=",") # this contains only the matrix ProjectData
     ProjectData=data.matrix(ProjectData)
+    colnames(ProjectData) <- gsub("\\."," ",colnames(ProjectData))
     
     updateSelectInput(session, "segmentation_attributes_used","Segmentation variables used",  colnames(ProjectData), selected=colnames(ProjectData)[1])
     updateSelectInput(session, "profile_attributes_used","Profiling variables used",  colnames(ProjectData), selected=colnames(ProjectData)[1])
+    updateSelectInput(session, "var_for_hist","Select the attribute to see the Histogram : ",  colnames(ProjectData), selected=colnames(ProjectData)[1])
     
     ProjectData
   })
@@ -128,14 +130,14 @@ shinyServer(function(input, output,session) {
     input$action_summary
     
     all_inputs <- user_inputs()
-    ProjectData = all_inputs$ProjectData
+    ProjectData = all_inputs$ProjectData_segment
     
     my_summary(ProjectData)
   })
   
   # Now pass to ui.R what it needs to display this tab
   output$summary <- renderTable({        
-    t(the_summary_tab())
+    the_summary_tab()
   })
   
   
@@ -151,9 +153,9 @@ shinyServer(function(input, output,session) {
     
     all_inputs <- user_inputs()
     ProjectData = all_inputs$ProjectData
-    var_chosen = max(0,min(input$var_chosen,ncol(ProjectData)))
     
-    ProjectData[,var_chosen,drop=F]
+    var_for_hist <- input$var_for_hist
+    ProjectData[,var_for_hist,drop=F]
   })
   
   # Now pass to ui.R what it needs to display this tab
@@ -237,7 +239,7 @@ shinyServer(function(input, output,session) {
     Cluster_Profile_mean <- sapply(cluster_ids, function(i) apply(ProjectData_profile[(cluster_memberships==i), ,drop=F], 2, mean))
     if (ncol(ProjectData_profile) <2)
       Cluster_Profile_mean=t(Cluster_Profile_mean)
-    colnames(Cluster_Profile_mean) <- paste("Segment (AVG)", 1:length(cluster_ids), sep=" ")
+    colnames(Cluster_Profile_mean) <- paste("Segment", 1:length(cluster_ids), "(AVG)", sep=" ")
     
     list(
       ProjectData_segment = ProjectData_segment,
@@ -255,7 +257,7 @@ shinyServer(function(input, output,session) {
     input$action_dendrogram
     data_used = the_hclust_computations()
     
-    plot(data_used$Hierarchical_Cluster,main = NULL, sub=NULL,labels = 1:nrow(data_used$ProjectData_segment), xlab="Our Observations", cex.lab=1, cex.axis=1) 
+    plot(data_used$Hierarchical_Cluster,main = "The Dendrogram" , sub=NULL,labels = 1:nrow(data_used$ProjectData_segment), xlab="Our Observations", cex.lab=1, cex.axis=1) 
     rect.hclust(data_used$Hierarchical_Cluster, k=input$numb_clusters_used, border="red") 
   })
   
@@ -263,7 +265,7 @@ shinyServer(function(input, output,session) {
     input$action_heights
     data_used = the_hclust_computations()
     
-    plot(data_used$Hierarchical_Cluster$height[length(data_used$Hierarchical_Cluster$height):1],type="l")
+    plot(data_used$Hierarchical_Cluster$height[length(data_used$Hierarchical_Cluster$height):1],type="l", ylab="distances", main="The Dendrogram Heights Plot")
   })
   
   
@@ -287,6 +289,19 @@ shinyServer(function(input, output,session) {
     data_used    
   })  
   
+  output$hclust_membershipt <- renderText({
+    data_used = the_Hcluster_member_tab()
+    c(paste("The chosen observation", input$hclust_obs_chosen ,"is in Cluster Membership (Hclust) :", data_used[1,1], sep=" "))
+  })
+  
+  output$hclust_profiling<-renderTable({
+    input$action_profile
+    
+    #data_used = the_kmeans_tab()  
+    data_used = the_hclust_computations()
+    # Must also show the standard deviations...!
+    data_used$Cluster_Profile_mean
+  })
   
   ########## The next few tabs use the same "heavy computation" results for kmeans, so we do these only once
   
@@ -321,7 +336,7 @@ shinyServer(function(input, output,session) {
     Cluster_Profile_mean <- sapply(cluster_ids, function(i) apply(ProjectData_profile[(cluster_memberships==i), ,drop=F], 2, mean))
     if (ncol(ProjectData_profile) <2)
       Cluster_Profile_mean=t(Cluster_Profile_mean)
-    colnames(Cluster_Profile_mean) <- paste("Segment (AVG)", 1:length(cluster_ids), sep=" ")
+    colnames(Cluster_Profile_mean) <- paste("Segment", 1:length(cluster_ids), "(AVG)", sep=" ")
     
     
     list(
@@ -351,15 +366,19 @@ shinyServer(function(input, output,session) {
     data_used    
   })  
   
+  output$kmeans_membershipt <- renderText({
+    data_used = kmeans_membership()
+    c(paste("The chosen observation", input$kmeans_obs_chosen ,"is in Cluster Membership (Kmeans) :", data_used[1,1], sep=" "))
+  })
+  
   output$kmeans_profiling<-renderTable({
     input$action_profile
     
     #data_used = the_kmeans_tab()  
-    data_used = the_hclust_computations()
+    data_used = the_kmeans_tab()
     # Must also show the standard deviations...!
     data_used$Cluster_Profile_mean
-  })  
-  
+  })
   
   ### Now do the snake plot tab. first the reactive
   
@@ -385,7 +404,7 @@ shinyServer(function(input, output,session) {
     Cluster_Profile_standar_mean <- sapply(cluster_ids, function(i) apply(ProjectData_scaled_profile[(cluster_memberships==i), ,drop=F], 2, mean))
     if (ncol(ProjectData_scaled_profile) < 2)
       Cluster_Profile_standar_mean = t(Cluster_Profile_standar_mean)
-    colnames(Cluster_Profile_standar_mean) <- paste("Segment (AVG)", 1:length(cluster_ids), sep=" ")
+    colnames(Cluster_Profile_standar_mean) <- paste("Segment", 1:length(cluster_ids), "(AVG)", sep=" ")
     
     list(Cluster_Profile_standar_mean = Cluster_Profile_standar_mean,
          cluster_ids = cluster_ids)
@@ -397,9 +416,11 @@ shinyServer(function(input, output,session) {
     Cluster_Profile_standar_mean = data_used$Cluster_Profile_standar_mean
     cluster_ids = data_used$cluster_ids
     
-    plot(Cluster_Profile_standar_mean[, 1,drop=F], type="l", col="red", main="Snake plot for each cluster", ylab="mean of cluster", xlab="profiling variables (standardized)",ylim=c(min(Cluster_Profile_standar_mean),max(Cluster_Profile_standar_mean))) 
+    snake_plot_colors <- heat.colors(ncol(Cluster_Profile_standar_mean))
+    
+    plot(Cluster_Profile_standar_mean[, 1,drop=F], type="l", col=snake_plot_colors[1], main="Snake plot for each cluster", ylab="mean of cluster", xlab="profiling variables (standardized)",ylim=c(min(Cluster_Profile_standar_mean),max(Cluster_Profile_standar_mean))) 
     for(i in 2:ncol(Cluster_Profile_standar_mean))
-      lines(Cluster_Profile_standar_mean[, i], col="blue")
+      lines(Cluster_Profile_standar_mean[, i], col=snake_plot_colors[i])
   })  
   
   # Now the report and slides  

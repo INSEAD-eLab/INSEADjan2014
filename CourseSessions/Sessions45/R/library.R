@@ -25,6 +25,6 @@ my_summary <- function(thedata){
   res = apply(thedata, 2, function(r) c(min(r), quantile(r, 0.25), quantile(r, 0.5), mean(r), quantile(r, 0.75), max(r), sd(r)))
   res <- round(res,2)
   colnames(res) <- colnames(thedata)
-  rownames(res) <- c("min", "25 percent", "median", "mean", "75 percent", "max", "std")
+  rownames(res) <- c("min", "25 percentile", "median", "mean", "75 percentile", "max", "standard deviation")
   t(res)
 }
