@@ -289,7 +289,10 @@ shinyServer(function(input, output,session) {
     all_inputs <- user_inputs()
     data_used = unlist(the_box_plots_tab())
     
-    boxplot(data_used~all_inputs$estimation_data[,all_inputs$dependent_variable],
+    horizontal <- all_inputs$estimation_data[,all_inputs$dependent_variable]
+    horizontal <- ifelse(horizontal, "YES", "NO")
+    
+    boxplot(data_used~horizontal,
             data=all_inputs$estimation_data, 
             main=colnames(data_used), xlab=all_inputs$dependent_variable)
   })
