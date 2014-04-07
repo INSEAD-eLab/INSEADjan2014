@@ -21,6 +21,7 @@ shinyServer(function(input, output,session) {
     # ProjectData with the filethe user loads
     ProjectData <- read.csv(paste(paste(local_directory,"data",sep="/"), paste(input$datafile_name_coded, "csv", sep="."), sep = "/"), sep=";", dec=",") # this contains only the matrix ProjectData
     ProjectData=data.matrix(ProjectData)
+    #colnames(ProjectData) <- gsub("\\."," ",colnames(ProjectData))
     
     updateSelectInput(session, "dependent_variable","Dependent Variable",  choices = colnames(ProjectData), selected=colnames(ProjectData)[1])
     updateSelectInput(session, "independent_variables","Independent Variables",  choices = colnames(ProjectData), selected=colnames(ProjectData)[1])
@@ -236,7 +237,7 @@ shinyServer(function(input, output,session) {
   
   # Now pass to ui.R what it needs to display this tab
   output$summary <- renderTable({        
-    t(the_summary_tab())
+    the_summary_tab()
   })
   
   
@@ -594,18 +595,22 @@ shinyServer(function(input, output,session) {
       plot(res, main = "No method estimated or selected")
     } else {
       if(length(available_methods) > 1){
+        
+        plot(range(0,1), range(0,1), type="n", xlab="False positive rate", ylab="True positive rate", main="ROC Curve") 
+        
         for (iter in 1:length(res)){
           theperf = res[[iter]]$theperf
           thecolor = res[[iter]]$thecolor          
-          plot(theperf, col=thecolor, lty=1, main="ROC Curve")          
-          if(iter == 1){
-            grid()
-            par(new=TRUE)
-          }else if(iter != 1 && iter != length(res)){
-            par(new=TRUE)
-          }else{
-            par(new=FALSE)
-          }
+          #plot(theperf, col=thecolor, lty=1, main="ROC Curve")
+          lines(theperf@x.values[[1]], theperf@y.values[[1]], col=thecolor, lty=1)
+          #if(iter == 1){
+          #  grid()
+          #  par(new=TRUE)
+          #}else if(iter != 1 && iter != length(res)){
+          #  par(new=TRUE)
+          #}else{
+          #  par(new=FALSE)
+          #}
         }
       } else {
         theperf = res[[1]]$theperf
@@ -675,23 +680,18 @@ shinyServer(function(input, output,session) {
       plot(res, main = "No method estimated or selected")
     } else {
       if(length(available_methods) > 1){
+        
+        plot(range(0,100), range(0,100), type="n", xlab="Percent of Data", ylab="Percent of Class 1", main="Lift Curve")
+        
         for (iter in 1:length(res)){
           theperf = res[[iter]]$theperf
           thecolor = res[[iter]]$thecolor          
-          plot(theperf[1,], theperf[2,], col=thecolor,type='l', lty=1,main="Lift Curve")          
-          if(iter == 1){
-            grid()
-            par(new=TRUE)
-          }else if(iter != 1 && iter != length(res)){
-            par(new=TRUE)
-          }else{
-            par(new=FALSE)
-          }
+          lines(theperf[1,], theperf[2,], col=thecolor, lty=1)
         }
       } else {
         theperf = res[[1]]$theperf
         thecolor = res[[1]]$thecolor        
-        plot(theperf[1,], theperf[2,], col=thecolor, type='l',lty=1, main="Lift Curve")
+        plot(theperf[1,], theperf[2,], col=thecolor, type='l',lty=1, main="Lift Curve", xlab="Percent of Data", ylab="Percent of Class 1")
       }      
     }    
   })
@@ -763,23 +763,27 @@ shinyServer(function(input, output,session) {
       plot(res, main = "No method estimated or selected")
     } else {
       if(length(available_methods) > 1){
+        
+        min <- 0
+        max <- 0
+        
+        for (iter in 1:length(res)){
+          theperf = res[[iter]]$theperf
+          min <- min(min, min(theperf[2, ]))
+          max <- max(max, max(theperf[2, ]))
+        }
+        
+        plot(range(0,100), range(min, max), type="n", xlab="Percent of Data", ylab="Estimated profit", main="Profit Curve")
+        
         for (iter in 1:length(res)){
           theperf = res[[iter]]$theperf
           thecolor = res[[iter]]$thecolor          
-          plot(theperf[1,], theperf[2,], col=thecolor,type='l', lty=1, main="Profit Curve")          
-          if(iter == 1){
-            grid()
-            par(new=TRUE)
-          }else if(iter != 1 && iter != length(res)){
-            par(new=TRUE)
-          }else{
-            par(new=FALSE)
-          }
+          lines(theperf[1,], theperf[2,], col=thecolor, lty=1)          
         }
       } else {
         theperf = res[[1]]$theperf
         thecolor = res[[1]]$thecolor        
-        plot(theperf[1,], theperf[2,], col=thecolor,type='l', lty=1, main="Profit Curve")
+        plot(theperf[1,], theperf[2,], col=thecolor,type='l', lty=1, main="Profit Curve", xlab="Percent of Data", ylab="Estimated profit")
       }      
     }    
   })

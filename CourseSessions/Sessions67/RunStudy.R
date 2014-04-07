@@ -11,7 +11,7 @@ rm(list = ls( )) # clean up the workspace
 # When running the case on a local computer, modify this in case you saved the case in a different directory 
 # (e.g. local_directory <- "C:/user/MyDocuments" )
 # type in the Console below help(getwd) and help(setwd) for more information
-local_directory <- "~/INSEADjan2014/CourseSessions/Sessions67"
+local_directory <- "/srv/shiny-server/INSEADjan2014/CourseSessions/Sessions67"
 
 cat("\n *********\n WORKING DIRECTORY IS ", local_directory, "\n PLEASE CHANGE IT IF IT IS NOT CORRECT using setwd(..) - type help(setwd) for more information \n *********")
 
@@ -77,7 +77,7 @@ max_data_report = 50 # can also chance in server.R
 # 1: start application on LOCAL computer, 0: do not start it
 # SELECT 0 if you are running the application on a server 
 # (DEFAULT is 0). 
-start_local_webapp <- 0
+start_local_webapp <- 1
 # NOTE: You need to make sure the shiny library is installing (see below)
 
 ################################################
@@ -109,7 +109,7 @@ if (require(shiny) == FALSE)
   install_libraries("shiny")
 CART_control = rpart.control(cp = CART_cp)
 source(paste(local_directory,"R/heatmapOutput.R", sep = "/"))
-source(paste(local_directory,"R/runcode.R", sep = "/"))
+#source(paste(local_directory,"R/runcode.R", sep = "/"))
 
 if (start_local_webapp){
       
