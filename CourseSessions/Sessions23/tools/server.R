@@ -150,8 +150,33 @@ shinyServer(function(input, output,session) {
   output$histograms <- renderPlot({  
     data_used = unlist(the_histogram_tab())
     numb_of_breaks = ifelse(length(unique(data_used)) < 10, length(unique(data_used)), length(data_used)/5)    
-    hist(data_used, breaks=numb_of_breaks,main = NULL, xlab=paste("Histogram of Variable: ",input$var_for_hist), ylab="Frequency", cex.lab=1.2, cex.axis=1.2)
+    #hist(data_used, breaks=numb_of_breaks,main = NULL, xlab=paste("Histogram of Variable: ",input$var_for_hist), ylab="Frequency", cex.lab=1.2, cex.axis=1.2)
+    histogram_plot(data_used, numb_of_breaks)
   })
+  
+  ## starting for png download testing
+  
+  histogram_plot <- function(data_used, numb_of_breaks){
+    hist(data_used, breaks=numb_of_breaks,main = NULL, xlab=paste("Histogram of Variable: ",colnames(data_used)), ylab="Frequency", cex.lab=1.2, cex.axis=1.2)
+  }
+  
+  output$downloadData <- downloadHandler(  
+    filename = function() {
+      paste('myplot.png', sep='')
+    },
+    
+    content = function(file) {
+      data_used = unlist(the_histogram_tab())
+      numb_of_breaks = ifelse(length(unique(data_used)) < 10, length(unique(data_used)), length(data_used)/5)
+      
+      png(file, bg = "white", res = NA)
+      histogram_plot(data_used, numb_of_breaks)
+      dev.off()
+    },
+    contentType = 'image/png'
+  )
+  
+  ## end of png download
   
   ########## The next few tabs use the same "heavy computation" results for Hclust, so we do these only once
   

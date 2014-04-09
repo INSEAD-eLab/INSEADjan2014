@@ -88,6 +88,8 @@ heavy computation or traffic on the server, in which case you should simply wait
                selectInput("var_for_hist","Select the attribute to see the Histogram : ",  choices=c("attributes used"),selected=NULL, multiple=FALSE),
                #actionButton("action_histogram", "Show/Update Results"),
                HTML("<br>"),
+               downloadButton('downloadData', 'Download the chart'),
+               HTML("<br>"),
                div(class="span11",plotOutput('histograms'))), 
       tabPanel("Correlations",
                selectInput("show_colnames", "Show column names?", choices=c("YES","NO"),selected=1, multiple=FALSE),               
