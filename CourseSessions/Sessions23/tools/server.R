@@ -206,9 +206,9 @@ shinyServer(function(input, output,session) {
     sorted_rows <- sort(Rotated_Factors[,1], decreasing = TRUE, index.return = TRUE)$ix
     Rotated_Factors <- Rotated_Factors[sorted_rows,]
     
-    Rotated_Factors<-as.data.frame(unclass(Rotated_Factors))
-    colnames(Rotated_Factors)<-paste("Component",1:ncol(Rotated_Factors),sep=" ")
-    rownames(Rotated_Factors) <- colnames(ProjectDataFactor)
+    #Rotated_Factors<-as.data.frame(unclass(Rotated_Factors))
+    #colnames(Rotated_Factors)<-paste("Component",1:ncol(Rotated_Factors),sep=" ")
+    #rownames(Rotated_Factors) <- colnames(ProjectDataFactor)
     
     if (input$show_colnames_rotate== "NO")
       rownames(Rotated_Factors)<- NULL
