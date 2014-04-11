@@ -88,7 +88,7 @@ heavy computation or traffic on the server, in which case you should simply wait
                selectInput("var_for_hist","Select the attribute to see the Histogram : ",  choices=c("attributes used"),selected=NULL, multiple=FALSE),
                #actionButton("action_histogram", "Show/Update Results"),
                HTML("<br>"),
-               downloadButton('downloadData', 'Download the chart'),
+               downloadButton('downloadHist', 'Download the chart'),
                HTML("<br>"),
                div(class="span11",plotOutput('histograms'))), 
       tabPanel("Correlations",
@@ -121,6 +121,8 @@ heavy computation or traffic on the server, in which case you should simply wait
                numericInput("factor1", "Select the the x-axis factors to use:",1),
                numericInput("factor2", "Select the the y-axis factors to use:",2),             
                #actionButton("action_visual", "Show/Update Results"),
+               HTML("<br>"),
+               downloadButton('downloadFact', 'Download the chart'),
                HTML("<br>"),
                plotOutput("NEW_ProjectData",  height = "600px")) 
     )

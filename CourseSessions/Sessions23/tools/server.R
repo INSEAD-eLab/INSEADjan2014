@@ -155,12 +155,13 @@ shinyServer(function(input, output,session) {
   })
   
   ## starting for png download testing
-  
+  ## function to generate histogram and this will be used in both web tool and downloading 
   histogram_plot <- function(data_used, numb_of_breaks){
     hist(data_used, breaks=numb_of_breaks,main = NULL, xlab=paste("Histogram of Variable: ",colnames(data_used)), ylab="Frequency", cex.lab=1.2, cex.axis=1.2)
   }
   
-  output$downloadData <- downloadHandler(  
+  ## download handler for histogram
+  output$downloadHist <- downloadHandler(  
     filename = function() {
       paste('myplot.png', sep='')
     },
@@ -175,8 +176,6 @@ shinyServer(function(input, output,session) {
     },
     contentType = 'image/png'
   )
-  
-  ## end of png download
   
   ########## The next few tabs use the same "heavy computation" results for Hclust, so we do these only once
   
@@ -331,9 +330,15 @@ shinyServer(function(input, output,session) {
     factor1 = max(1,min(input$factor1,ncol(NEW_ProjectData)))
     factor2 = max(1,min(input$factor2,ncol(NEW_ProjectData)))
     
+    factor_plot(NEW_ProjectData, factor1, factor2)
+  })
+  
+  ## starting for png download testing
+  ## function to generate factor and this will be used in both web tool and downloading 
+  factor_plot <- function(NEW_ProjectData, factor1, factor2){
     if (ncol(NEW_ProjectData)>=2 ){
       plot(NEW_ProjectData[,factor1],NEW_ProjectData[,factor2], 
-           main="Data Visualization Using the Derived Attributes (Factors)",
+           main="Visualization Using the Derived Attributes (Factors)",
            xlab=colnames(NEW_ProjectData)[factor1], 
            ylab=colnames(NEW_ProjectData)[factor2])
     } else {
@@ -342,7 +347,27 @@ shinyServer(function(input, output,session) {
            xlab="Derived Variable (Factor) 1", 
            ylab="Initial Variable (Factor) 2")
     }
-  })
+  }
+  
+  ## download handler for histogram
+  output$downloadFact <- downloadHandler(  
+    filename = function() {
+      paste('myplot_factor.png', sep='')
+    },
+    
+    content = function(file) {
+      data_used = the_computations()    
+      NEW_ProjectData <- data_used$NEW_ProjectData
+      
+      factor1 = max(1,min(input$factor1,ncol(NEW_ProjectData)))
+      factor2 = max(1,min(input$factor2,ncol(NEW_ProjectData)))
+      
+      png(file, bg = "white", res = NA)
+      factor_plot(NEW_ProjectData, factor1, factor2)
+      dev.off()
+    },
+    contentType = 'image/png'
+  )
   
   # Now the report and slides  
   # first the reactive function doing all calculations when the related inputs were modified by the user
